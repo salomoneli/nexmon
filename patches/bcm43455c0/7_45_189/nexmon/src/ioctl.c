@@ -44,6 +44,7 @@
 #include <nexioctls.h>          // ioctls added in the nexmon patch
 #include <version.h>            // version information
 #include <argprintf.h>          // allows to execute argprintf to print into the arg buffer
+#include <bcmwifi_channels.h>
 
 #define NULL 0
 
@@ -54,6 +55,43 @@ wlc_ioctl_hook(struct wlc_info *wlc, int cmd, char *arg, int len, void *wlc_if)
     argprintf_init(arg, len);
 
     switch(cmd) {
+
+        case 512:
+        {
+            unsigned int chanspec = get_chanspec(wlc);
+            unsigned int channel = CHSPEC_CHANNEL(chanspec);
+
+            printf("ioctl.c:504: INFO: chanspec = 0x%x\n", chanspec);
+            printf("ioctl.c:504: INFO: currently used channel=%d\n", channel);
+
+            unsigned char tmp_channel = channel;
+            if (arg != 0) {
+                printf("ioctl.c:504: arg != 0: tmp_channel = %d\n", tmp_channel);
+                tmp_channel = *((unsigned int*)arg);
+            } else {
+                ret = IOCTL_SUCCESS;
+                break;
+            }
+            printf("ioctl.c:504: INFO: new channel = %d\n", tmp_channel);
+
+            /*if (tmp_channel > 14 || tmp_channel == 0) {
+                ret = IOCTL_SUCCESS;
+                break;
+            }*/
+
+            // set the channel
+            set_chanspec(wlc, CH20MHZ_CHSPEC(tmp_channel));
+
+            chanspec = get_chanspec(wlc);
+            channel = CHSPEC_CHANNEL(chanspec);
+            unsigned int bandwidth = CHSPEC_BW(chanspec);
+
+            printf("ioctl.c:504: INFO: chanspec = 0x%x\n", chanspec);
+            printf("ioctl.c:504: INFO: BW=%d; CH=%d\n", (bandwidth == WL_CHANSPEC_BW_20) ? 20 : 80, channel);
+
+            break;
+        }
+
         case 510:
         {
             argprintf("%s\n", __FUNCTION__);

@@ -126,6 +126,7 @@ struct wl_rxsts {
     void        *wlif;          /* wl interface */
 } __attribute__((packed));
 
+
 /* status per error RX pkt */
 #define WL_RXS_CRC_ERROR        0x00000001 /* CRC Error in packet */
 #define WL_RXS_RUNT_ERROR       0x00000002 /* Runt packet */

@@ -54,14 +54,14 @@ inject_frame(struct wl_info *wl, sk_buff *p) {
     //Radiotap parsing:
     struct ieee80211_radiotap_iterator iterator;
     struct ieee80211_radiotap_header *rtap_header;
-
+    printf("Parse radiotap header - 1\n");
     //parse radiotap header
     rtap_len = *((char *)(p->data + 2));
-
+    printf("Parse radiotap header - 2\n");
     rtap_header = (struct ieee80211_radiotap_header *) p->data;
-
+    printf("Parse radiotap header - 3\n");
     int ret = ieee80211_radiotap_iterator_init(&iterator, rtap_header, rtap_len, 0);
-
+    printf("Parse radiotap header - 4\n");
     while(!ret) {
         ret = ieee80211_radiotap_iterator_next(&iterator);
         if(ret) {
@@ -79,10 +79,10 @@ inject_frame(struct wl_info *wl, sk_buff *p) {
                 break;
         }
     }
-
+    printf("Parse radiotap header - 5\n");
     //remove radiotap header
     skb_pull(p, rtap_len);
-
+    printf("Parse radiotap header - 6\n");
     //inject frame without using the queue
     sendframe(wlc, p, 1, data_rate);
 
