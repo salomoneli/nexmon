@@ -31,38 +31,74 @@
  * along with NexMon. If not, see <http://www.gnu.org/licenses/>.          *
  *                                                                         *
  **************************************************************************/
+#include <structs.h>
+#include <stdarg.h>
 
-#pragma NEXMON targetregion "patch"
+#ifndef LOCAL_WRAPPER_C
+#define LOCAL_WRAPPER_C
 
-#include <firmware_version.h>   // definition of firmware version macros
-#include <debug.h>              // contains macros to access the debug hardware
-#include <wrapper.h>            // wrapper definitions for functions that already exist in the firmware
-#include <structs.h>            // structures that are used by the code in the firmware
-#include <helper.h>             // useful helper functions
-#include <patcher.h>            // macros used to craete patches such as BLPatch, BPatch, ...
-#include <rates.h>              // rates used to build the ratespec for frame injection
-#include <nexioctls.h>          // ioctls added in the nexmon patch
-#include <capabilities.h>       // capabilities included in a nexmon patch
-#include <local_wrapper.h>
+#include <firmware_version.h>
+#include <structs.h>
+#include <stdarg.h>
 
-char
-sendframe(struct wlc_info *wlc, struct sk_buff *p, unsigned int fifo, unsigned int rate)
-{
-    char ret;
+#ifndef WRAPPER_H
+    // if this file is not included in the wrapper.h file, create dummy functions
+    #define VOID_DUMMY { ; }
+    #define RETURN_DUMMY { ; return 0; }
 
-    // this unmutes the currently used channel and allows to send on "quiet/passive" channels
-    wlc_bmac_mute(wlc->hw, 0, 0);
-    
-    if (wlc->band->bandtype == WLC_BAND_5G && rate < RATES_RATE_6M) {
-        rate = RATES_RATE_6M;
-    }
+    #define AT(CHIPVER, FWVER, ADDR) __attribute__((weak, at(ADDR, "dummy", CHIPVER, FWVER)))
+#else
+    // if this file is included in the wrapper.h file, create prototypes
+    #define VOID_DUMMY ;
+    #define RETURN_DUMMY ;
+    #define AT(CHIPVER, FWVER, ADDR)
+#endif
 
-    if (wlc->hw->up) {
-        ret = wlc_sendctl(wlc, p, wlc->active_queue, wlc->band->hwrs_scb, fifo, rate, 0);
-    } else {
-        ret = wlc_sendctl(wlc, p, wlc->active_queue, wlc->band->hwrs_scb, fifo, rate, 1);
-        printf("ERR: wlc down\n");
-    }
+AT(CHIP_VER_BCM43455c0, FW_VER_7_45_189, 0x19A548)
+void
+hndrte_print_memuse(void)
+VOID_DUMMY
 
-    return ret;
-}
+AT(CHIP_VER_BCM43455c0, FW_VER_7_45_189, 0x58950)
+bool
+wlc_quiet_chanspec(void *wlc_cmi, unsigned short chanspec)
+RETURN_DUMMY
+
+AT(CHIP_VER_BCM43455c0, FW_VER_7_45_189, 0x49874)
+void
+wlc_bmac_mute(struct wlc_hw_info *wlc_hw, bool on, uint32 flags)
+VOID_DUMMY
+
+AT(CHIP_VER_BCM43455c0, FW_VER_7_45_189, 0x57b70)
+void
+wlc_clr_quiet_chanspec(void *wlc_cmi, unsigned short chanspec)
+VOID_DUMMY
+
+AT(CHIP_VER_BCM43430a1, FW_VER_ALL, 0x85399c)
+AT(CHIP_VER_BCM43455c0, FW_VER_ALL, 0x5DA48)
+void *
+wlc_hwtimer_alloc_timeout(void *wlc_off_0x5D0)
+RETURN_DUMMY
+
+AT(CHIP_VER_BCM43430a1, FW_VER_ALL, 0x853928)
+AT(CHIP_VER_BCM43455c0, FW_VER_ALL, 0x5D9D4)
+void *
+wlc_hwtimer_add_timeout(void *timeout_inst, unsigned int timeout, void (*fn)(void *), void *fn_arg)
+RETURN_DUMMY
+
+AT(CHIP_VER_BCM43430a1, FW_VER_ALL, 0x8539c4)
+AT(CHIP_VER_BCM43455c0, FW_VER_ALL, 0x5DA70)
+void *
+wlc_hwtimer_del_timeout(void *timeout_inst)
+RETURN_DUMMY
+
+AT(CHIP_VER_BCM43430a1, FW_VER_ALL, 0x880E30)
+void *
+wlc_hwtimer_free_timeout(void *timeout_inst)
+RETURN_DUMMY
+
+#undef VOID_DUMMY
+#undef RETURN_DUMMY
+#undef AT
+
+#endif /*LOCAL_WRAPPER_C*/
